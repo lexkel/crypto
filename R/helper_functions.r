@@ -56,7 +56,7 @@ get_marketcap_table <- function(n = 100) {
   
 }
 
-get_historical_prices <- function(currency, start_date = Sys.Date() %-time% "1 year", end_date = Sys.Date(), ...) {
+get_historical_prices <- function(currency, start_date, end_date) {
   
   # currency = "bitcoin"
   # start_date = Sys.Date() %-time% "1 year"
@@ -86,7 +86,7 @@ get_historical_prices <- function(currency, start_date = Sys.Date() %-time% "1 y
     page(currency) %>% 
     read_html()
   
-  Sys.sleep(1)
+  Sys.sleep(1.5)
   closeAllConnections()
   gc()
   
@@ -109,4 +109,13 @@ get_historical_prices <- function(currency, start_date = Sys.Date() %-time% "1 y
   
 }
 
-safely_get_historical_prices <- possibly(get_historical_prices, otherwise = "Error", ...)
+safely_get_historical_prices <- possibly(get_historical_prices, otherwise = "Error")
+
+save_data_googlesheets <- function(data, sheet) {
+  data <- data %>% as.list() %>% data.frame()
+  sheet_append(sheet, data)
+}
+
+load_data_googlesheets <- function(sheet) {
+  read_sheet(sheet)
+}
