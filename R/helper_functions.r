@@ -90,7 +90,7 @@ get_historical_prices <- function(currency, start_date, end_date) {
   closeAllConnections()
   gc()
   
-  data <- 
+  data <-
     data %>% 
     html_node(xpath = '//table') %>% 
     html_table() %>% 
@@ -101,7 +101,7 @@ get_historical_prices <- function(currency, start_date, end_date) {
       close = ifelse(close == "N/A", NA_character_, close),
       across(market_cap:close, parse_number)
     ) %>% 
-    select(currency, date, open, close) %>% 
+    select(currency, date, market_cap, open, close) %>% 
     drop_na() %>% 
     nest(data = -currency)
   
@@ -118,4 +118,22 @@ save_data_googlesheets <- function(data, sheet) {
 
 load_data_googlesheets <- function(sheet) {
   read_sheet(sheet)
+}
+
+clear_data_googlesheets <- function(sheet) {
+  range_delete(sheet, range = cell_cols(1:10))
+  range_write(
+    ss = sheet,
+    data = 
+      tibble(
+        "rank" = NA_character_, 
+        "currency" = NA_character_, 
+        "date" = NA_character_, 
+        "market_cap" = NA_character_, 
+        "open" = NA_character_, 
+        "close" = NA_character_
+      ),
+    range = cell_cols(1:6),
+    col_names = TRUE
+  )
 }

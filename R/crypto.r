@@ -1,5 +1,5 @@
 
-# Tim's crypto currency app
+# Tim's cryptocurrency app
 
 library(tidyverse)
 library(janitor)
@@ -7,9 +7,8 @@ library(timetk)
 library(rvest)
 library(googlesheets4)
 
-
 top_n <- 100
-start_over <- "FALSE"
+start_over <- "TRUE"
 sheet_url <- "https://docs.google.com/spreadsheets/d/17HoyJXunYyzzmc5IHbr8G_1xk0pMwXROo1f9fjpdVV0"
 
 # Import helper functions
@@ -38,11 +37,18 @@ if (start_over == "TRUE") {
       ),
       safely_get_historical_prices
     ) %>%
-    unnest(cols = data)
+    unnest(cols = data) %>% 
+    group_by(date) %>% 
+    mutate(rank = rank(desc(market_cap)))
   
   # overwrite the existing googlesheets with new data?
   
-  # need new function to clear existing date in googlesheets and start over.
+  clear_data_googlesheets(sheet_url)
+  
+  save_data_googlesheets(
+    data = master_coins_prices, 
+    sheet = sheet_url
+  )
   
 } else {
   
@@ -108,12 +114,14 @@ if (start_over == "TRUE") {
         by = "currency"
       ) %>% 
       arrange(rank, desc(date)) %>% 
-      select(-rank)
+      select(-rank) %>% 
+      group_by(date) %>% 
+      mutate(rank = rank(desc(market_cap)))
   
 }
 
 
-# tim's trading strategy
+# Tim's trading strategy
 
 # My strategy is basically to hold 5 tokens/coins from the coin market cap rank by 
 # capitalisation from the chosen level (ie. 10-15, 50-55, 100-105) and then rebalance 
